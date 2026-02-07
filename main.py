@@ -1,0 +1,114 @@
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from webdriver_manager.chrome import ChromeDriverManager
+from PIL import Image
+import time
+import os
+
+# ================= CONFIG =================
+
+LINKS = {
+    "doc_1": "https://example.com/first",
+    "doc_2": "https://example.com/second",
+}
+
+BASE_DIR = "output"
+IMAGES_DIR = os.path.join(BASE_DIR, "images")
+
+PROFILE_PATH = "/Users/USERNAME/Library/Application Support/Google/Chrome"
+PROFILE_NAME = "Default"
+
+WAIT = 10
+
+# ==========================================
+
+
+def create_driver():
+    options = Options()
+    options.add_argument(f"--user-data-dir={PROFILE_PATH}")
+    options.add_argument(f"--profile-directory={PROFILE_NAME}")
+
+    return webdriver.Chrome(
+        service=Service(ChromeDriverManager().install()),
+        options=options
+    )
+
+
+def collect_images(driver):
+    os.makedirs(IMAGES_DIR, exist_ok=True)
+
+    all_images = []
+    global_step = 1
+    wait = WebDriverWait(driver, WAIT)
+
+    for name, url in LINKS.items():
+        print(f"\n=== Processing {name} ===")
+        driver.get(url)
+
+        wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div.content")))
+        time.sleep(1)
+
+        while True:
+            content = driver.find_element(By.CSS_SELECTOR, "div.content")
+
+            # Find all pageSection elements inside content
+            sections = content.find_elements(By.CSS_SELECTOR, '[id^="pageSection"]')
+
+            if not sections:
+                print("No pageSection elements found")
+                break
+
+            for section in sections:
+                img_path = os.path.join(IMAGES_DIR, f"{global_step:04}.png")
+                section.screenshot(img_path)
+                all_images.append(img_path)
+
+                section_id = section.get_attribute("id")
+                print(f"Screenshot {global_step} ({section_id})")
+                global_step += 1
+
+            # Check the Next button state
+            next_btn = driver.find_element(By.ID, "page_next")
+            classes = next_btn.get_attribute("class")
+
+            if "disabled" in classes:
+                print("Next button is disabled — end of document")
+                break
+
+            next_btn.click()
+            wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div.content")))
+            time.sleep(1)
+
+    return all_images
+
+
+def images_to_pdf(images, pdf_path):
+    pil_images = [Image.open(img).convert("RGB") for img in images]
+    pil_images[0].save(
+        pdf_path,
+        save_all=True,
+        append_images=pil_images[1:]
+    )
+
+
+def main():
+    os.makedirs(BASE_DIR, exist_ok=True)
+
+    driver = create_driver()
+    driver.maximize_window()
+
+    try:
+        images = collect_images(driver)
+        pdf_path = os.path.join(BASE_DIR, "result.pdf")
+        images_to_pdf(images, pdf_path)
+        print(f"\nPDF successfully created: {pdf_path}")
+    finally:
+        driver.quit()
+
+
+if __name__ == "__main__":
+    main()
