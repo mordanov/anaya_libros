@@ -9,13 +9,9 @@ from PIL import Image
 import time
 import os
 import argparse
+import yaml
 
 # ================= CONFIG =================
-
-LINKS = {
-    "doc_1": "https://example.com/first",
-    "doc_2": "https://example.com/second",
-}
 
 BASE_DIR = "output"
 IMAGES_DIR = os.path.join(BASE_DIR, "images")
@@ -24,6 +20,7 @@ IMAGES_DIR = os.path.join(BASE_DIR, "images")
 PROFILE_PATH = None
 PROFILE_NAME = None
 PDF_FILENAME = "result.pdf"
+LINKS = {}
 
 WAIT = 10
 
@@ -98,21 +95,34 @@ def images_to_pdf(images, pdf_path):
     )
 
 
+def load_config(config_name):
+    config_path = os.path.join("configs", f"{config_name}.yaml")
+    if not os.path.exists(config_path):
+        raise FileNotFoundError(f"Config file not found: {config_path}")
+
+    with open(config_path, 'r') as f:
+        config = yaml.safe_load(f)
+
+    return config.get('links', {})
+
+
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Collect images from web pages and convert to PDF")
     parser.add_argument("--username", required=True, help="Username for Chrome profile path")
     parser.add_argument("--profile-name", required=True, help="Chrome profile name (e.g., Default)")
+    parser.add_argument("--config", required=True, help="Config name (e.g., default, without .yaml extension)")
     parser.add_argument("--pdf-filename", default="result.pdf", help="Output PDF filename (default: result.pdf)")
     return parser.parse_args()
 
 
 def main():
-    global PROFILE_PATH, PROFILE_NAME, PDF_FILENAME
+    global PROFILE_PATH, PROFILE_NAME, PDF_FILENAME, LINKS
 
     args = parse_arguments()
     PROFILE_PATH = f"/Users/{args.username}/Library/Application Support/Google/Chrome"
     PROFILE_NAME = args.profile_name
     PDF_FILENAME = args.pdf_filename
+    LINKS = load_config(args.config)
 
     os.makedirs(BASE_DIR, exist_ok=True)
 
