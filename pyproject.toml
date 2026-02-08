@@ -1,6 +1,15 @@
 [tool.ruff]
 line-length = 100
 target-version = "py312"
+exclude = [
+    ".git",
+    ".venv",
+    "__pycache__",
+    ".pytest_cache",
+    ".idea",
+]
+
+[tool.ruff.lint]
 select = [
     "E",    # pycodestyle errors
     "W",    # pycodestyle warnings
@@ -11,14 +20,6 @@ select = [
 ]
 ignore = [
     "E501",  # line too long (handled by formatter)
-    "W503",  # line break before binary operator
-]
-exclude = [
-    ".git",
-    ".venv",
-    "__pycache__",
-    ".pytest_cache",
-    ".idea",
 ]
 
 [tool.mypy]
