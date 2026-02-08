@@ -1,15 +1,17 @@
+import argparse
+import os
+import time
+from typing import Dict
+
+import yaml
+from PIL import Image
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
-from PIL import Image
-import time
-import os
-import argparse
-import yaml
 
 # ================= CONFIG =================
 
@@ -17,10 +19,10 @@ BASE_DIR = "output"
 IMAGES_DIR = os.path.join(BASE_DIR, "images")
 
 # These will be set by command-line arguments
-PROFILE_PATH = None
-PROFILE_NAME = None
-PDF_FILENAME = "result.pdf"
-LINKS = {}
+PROFILE_PATH: str | None = None
+PROFILE_NAME: str | None = None
+PDF_FILENAME: str = "result.pdf"
+LINKS: Dict[str, str] = {}
 
 WAIT = 10
 
@@ -32,10 +34,7 @@ def create_driver():
     options.add_argument(f"--user-data-dir={PROFILE_PATH}")
     options.add_argument(f"--profile-directory={PROFILE_NAME}")
 
-    return webdriver.Chrome(
-        service=Service(ChromeDriverManager().install()),
-        options=options
-    )
+    return webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
 
 def collect_images(driver):
@@ -88,30 +87,30 @@ def collect_images(driver):
 
 def images_to_pdf(images, pdf_path):
     pil_images = [Image.open(img).convert("RGB") for img in images]
-    pil_images[0].save(
-        pdf_path,
-        save_all=True,
-        append_images=pil_images[1:]
-    )
+    pil_images[0].save(pdf_path, save_all=True, append_images=pil_images[1:])
 
 
 def load_config(config_name):
-    config_path = os.path.join("configs", f"{config_name}.yaml")
+    config_path = os.path.join("../configs", f"{config_name}.yaml")
     if not os.path.exists(config_path):
         raise FileNotFoundError(f"Config file not found: {config_path}")
 
-    with open(config_path, 'r') as f:
+    with open(config_path, "r") as f:
         config = yaml.safe_load(f)
 
-    return config.get('links', {})
+    return config.get("links", {})
 
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Collect images from web pages and convert to PDF")
     parser.add_argument("--username", required=True, help="Username for Chrome profile path")
     parser.add_argument("--profile-name", required=True, help="Chrome profile name (e.g., Default)")
-    parser.add_argument("--config", required=True, help="Config name (e.g., default, without .yaml extension)")
-    parser.add_argument("--pdf-filename", default="result.pdf", help="Output PDF filename (default: result.pdf)")
+    parser.add_argument(
+        "--config", required=True, help="Config name (e.g., default, without .yaml extension)"
+    )
+    parser.add_argument(
+        "--pdf-filename", default="result.pdf", help="Output PDF filename (default: result.pdf)"
+    )
     return parser.parse_args()
 
 

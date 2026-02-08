@@ -2,3 +2,9 @@ selenium==4.17.2
 webdriver-manager==4.0.1
 Pillow==10.4.0
 PyYAML==6.0.3
+pytest==8.4.2
+pytest-cov==4.1.0
+ruff==0.1.13
+mypy==1.8.0
+types-PyYAML==6.0.12.20250915
+types-Pillow==10.2.0.20240822
