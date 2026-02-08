@@ -8,6 +8,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from PIL import Image
 import time
 import os
+import argparse
 
 # ================= CONFIG =================
 
@@ -19,8 +20,10 @@ LINKS = {
 BASE_DIR = "output"
 IMAGES_DIR = os.path.join(BASE_DIR, "images")
 
-PROFILE_PATH = "/Users/USERNAME/Library/Application Support/Google/Chrome"
-PROFILE_NAME = "Default"
+# These will be set by command-line arguments
+PROFILE_PATH = None
+PROFILE_NAME = None
+PDF_FILENAME = "result.pdf"
 
 WAIT = 10
 
@@ -95,7 +98,22 @@ def images_to_pdf(images, pdf_path):
     )
 
 
+def parse_arguments():
+    parser = argparse.ArgumentParser(description="Collect images from web pages and convert to PDF")
+    parser.add_argument("--username", required=True, help="Username for Chrome profile path")
+    parser.add_argument("--profile-name", required=True, help="Chrome profile name (e.g., Default)")
+    parser.add_argument("--pdf-filename", default="result.pdf", help="Output PDF filename (default: result.pdf)")
+    return parser.parse_args()
+
+
 def main():
+    global PROFILE_PATH, PROFILE_NAME, PDF_FILENAME
+
+    args = parse_arguments()
+    PROFILE_PATH = f"/Users/{args.username}/Library/Application Support/Google/Chrome"
+    PROFILE_NAME = args.profile_name
+    PDF_FILENAME = args.pdf_filename
+
     os.makedirs(BASE_DIR, exist_ok=True)
 
     driver = create_driver()
@@ -103,7 +121,7 @@ def main():
 
     try:
         images = collect_images(driver)
-        pdf_path = os.path.join(BASE_DIR, "result.pdf")
+        pdf_path = os.path.join(BASE_DIR, PDF_FILENAME)
         images_to_pdf(images, pdf_path)
         print(f"\nPDF successfully created: {pdf_path}")
     finally:
