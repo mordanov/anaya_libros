@@ -1,6 +1,5 @@
 import os
 import shutil
-import sys
 import tempfile
 import unittest
 from unittest.mock import MagicMock, patch
@@ -8,10 +7,7 @@ from unittest.mock import MagicMock, patch
 import yaml
 from PIL import Image
 
-# Add the project root to the path
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-
-import main  # noqa: E402
+from src import main
 
 
 class TestLoadConfig(unittest.TestCase):
@@ -179,16 +175,16 @@ class TestParseArguments(unittest.TestCase):
 class TestCreateDriver(unittest.TestCase):
     """Tests for create_driver function"""
 
-    @patch("main.PROFILE_PATH", "/Users/testuser/Library/Application Support/Google/Chrome")
-    @patch("main.PROFILE_NAME", "Default")
-    @patch("main.webdriver.Chrome")
-    @patch("main.Service")
+    @patch("src.main.PROFILE_PATH", "/Users/testuser/Library/Application Support/Google/Chrome")
+    @patch("src.main.PROFILE_NAME", "Default")
+    @patch("src.main.webdriver.Chrome")
+    @patch("src.main.Service")
     def test_create_driver_configuration(self, mock_service, mock_chrome):
         """Test that driver is created with correct configuration"""
         mock_driver = MagicMock()
         mock_chrome.return_value = mock_driver
 
-        with patch("main.ChromeDriverManager"):
+        with patch("src.main.ChromeDriverManager"):
             main.create_driver()
 
         # Verify Chrome was called with correct options
@@ -265,9 +261,9 @@ class TestPathHandling(unittest.TestCase):
     @patch("os.makedirs")
     def test_output_directory_creation(self, mock_makedirs):
         """Test that output directory is created"""
-        with patch("main.BASE_DIR", self.temp_dir):
-            with patch("main.create_driver"):
-                with patch("main.collect_images", return_value=[]):
+        with patch("src.main.BASE_DIR", self.temp_dir):
+            with patch("src.main.create_driver"):
+                with patch("src.main.collect_images", return_value=[]):
                     pass
 
 

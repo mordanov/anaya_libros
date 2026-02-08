@@ -91,7 +91,7 @@ def images_to_pdf(images, pdf_path):
 
 
 def load_config(config_name):
-    config_path = os.path.join("configs", f"{config_name}.yaml")
+    config_path = os.path.join("../configs", f"{config_name}.yaml")
     if not os.path.exists(config_path):
         raise FileNotFoundError(f"Config file not found: {config_path}")
 

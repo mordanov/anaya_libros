@@ -40,7 +40,7 @@ jobs:
 
     - name: Type check with mypy
       run: |
-        mypy --install-types --non-interactive main.py
+        mypy --install-types --non-interactive src/main.py
 
     - name: Run tests with pytest
       run: |

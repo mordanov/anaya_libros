@@ -5,3 +5,5 @@ PyYAML==6.0.3
 pytest==8.4.2
 ruff==0.1.13
 mypy==1.8.0
+types-PyYAML==6.0.12.20250915
+types-Pillow==10.2.0.20240822
