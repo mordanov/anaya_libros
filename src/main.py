@@ -34,7 +34,12 @@ def create_driver():
     options.add_argument(f"--user-data-dir={PROFILE_PATH}")
     options.add_argument(f"--profile-directory={PROFILE_NAME}")
 
-    return webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    driver_path = ChromeDriverManager().install()
+    # Ensure we're using the correct chromedriver binary, not THIRD_PARTY_NOTICES
+    if driver_path.endswith("THIRD_PARTY_NOTICES.chromedriver"):
+        driver_path = driver_path.replace("THIRD_PARTY_NOTICES.chromedriver", "chromedriver")
+
+    return webdriver.Chrome(service=Service(driver_path), options=options)
 
 
 def collect_images(driver):
